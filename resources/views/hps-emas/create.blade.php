@@ -12,9 +12,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Jenis Barang -->
               <div>
-                <x-select
+                <x-free-text-select
                   id="jenis_barang"
                   name="jenis_barang"
+                  label="Jenis Barang"
                   class="mt-1 block w-full"
                   :options="$filterOptions['jenis_barang']"
                   :selected="old('jenis_barang')"
@@ -28,6 +29,7 @@
                 <x-input
                   id="stle_rp"
                   name="stle_rp"
+                  label="STLE (Rp)"
                   type="number"
                   step="0.01"
                   min="0"
@@ -40,9 +42,10 @@
 
               <!-- Kadar Karat -->
               <div>
-                <x-select
+                <x-free-text-select
                   id="kadar_karat"
                   name="kadar_karat"
+                  label="Kadar Karat"
                   class="mt-1 block w-full"
                   :options="$filterOptions['kadar_karat']"
                   :selected="old('kadar_karat')"
@@ -56,6 +59,7 @@
                 <x-input
                   id="berat_gram"
                   name="berat_gram"
+                  label="Berat (Gram)"
                   type="number"
                   step="0.01"
                   min="0"
@@ -71,6 +75,7 @@
                 <x-input
                   id="nilai_taksiran_rp"
                   name="nilai_taksiran_rp"
+                  label="Nilai Taksiran (Rp)"
                   type="number"
                   step="0.01"
                   min="0"
@@ -86,6 +91,7 @@
                 <x-input
                   id="ltv"
                   name="ltv"
+                  label="LTV (%)"
                   type="number"
                   step="0.01"
                   min="0"
@@ -102,6 +108,7 @@
                 <x-input
                   id="uang_pinjaman_rp"
                   name="uang_pinjaman_rp"
+                  label="Uang Pinjaman (Rp)"
                   type="number"
                   step="0.01"
                   min="0"

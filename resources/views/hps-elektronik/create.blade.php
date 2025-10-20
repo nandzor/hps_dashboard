@@ -11,49 +11,49 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Wilayah -->
-          <x-select 
-            name="kdwilayah" 
-            label="Wilayah" 
-            :options="$filterOptions['wilayah']" 
-            placeholder="Select Wilayah"
+          <x-free-text-select
+            name="kdwilayah"
+            label="Wilayah"
+            :options="$filterOptions['wilayah']"
+            placeholder="Ketik/ pilih Wilayah"
             required />
 
           <!-- Jenis Barang -->
-          <x-select 
-            name="jenis_barang" 
-            label="Jenis Barang" 
-            :options="$filterOptions['jenis_barang']" 
-            placeholder="Select Jenis Barang"
+          <x-free-text-select
+            name="jenis_barang"
+            label="Jenis Barang"
+            :options="$filterOptions['jenis_barang']"
+            placeholder="Ketik/ pilih Jenis Barang"
             required />
 
           <!-- Merek -->
-          <x-select 
-            name="merek" 
-            label="Merek" 
-            :options="$filterOptions['merek']" 
-            placeholder="Select Merek"
+          <x-free-text-select
+            name="merek"
+            label="Merek"
+            :options="$filterOptions['merek']"
+            placeholder="Ketik/ pilih Merek"
             required />
 
           <!-- Barang -->
-          <x-input 
-            name="barang" 
-            label="Barang" 
+          <x-input
+            name="barang"
+            label="Barang"
             type="text"
             placeholder="Enter barang name"
             required />
 
           <!-- Tahun -->
-          <x-select 
-            name="tahun" 
-            label="Tahun" 
-            :options="$filterOptions['tahun']" 
-            placeholder="Select Tahun"
+          <x-free-text-select
+            name="tahun"
+            label="Tahun"
+            :options="$filterOptions['tahun']"
+            placeholder="Ketik/ pilih Tahun"
             required />
 
           <!-- Harga -->
-          <x-input 
-            name="harga" 
-            label="Harga (Rp)" 
+          <x-input
+            name="harga"
+            label="Harga (Rp)"
             type="number"
             placeholder="Enter harga"
             min="0"
@@ -61,25 +61,25 @@
             required />
 
           <!-- Grade -->
-          <x-select 
-            name="grade" 
-            label="Grade" 
-            :options="$filterOptions['grade']" 
-            placeholder="Select Grade" />
+          <x-free-text-select
+            name="grade"
+            label="Grade"
+            :options="$filterOptions['grade']"
+            placeholder="Ketik/ pilih Grade" />
 
           <!-- Active Status -->
           <div class="flex items-center">
-            <x-checkbox 
-              name="active" 
-              label="Active" 
+            <x-checkbox
+              name="active"
+              label="Active"
               :checked="true" />
           </div>
         </div>
 
         <!-- Kondisi -->
-        <x-textarea 
-          name="kondisi" 
-          label="Kondisi" 
+        <x-textarea
+          name="kondisi"
+          label="Kondisi"
           placeholder="Enter kondisi description"
           :rows="3" />
 
