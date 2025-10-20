@@ -1,0 +1,110 @@
+version: "3.8"
+
+services:
+  cctv_app:
+    build:
+      context: .
+      dockerfile: ./docker/frankenphp/Dockerfile
+    container_name: cctv_app
+    ports:
+      - "9001:80"
+    volumes:
+      # Mount seluruh project untuk development (sync dengan host)
+      - .:/app
+
+      # Volume untuk Caddyfile
+      - ./docker/frankenphp/Caddyfile:/etc/caddy/Caddyfile
+
+      # Volume untuk menyimpan data Caddy
+      - caddy_data:/data
+      - caddy_config:/config
+
+      # Volume untuk storage dan cache (sync dengan host)
+      - ./storage:/app/storage
+      - ./bootstrap/cache:/app/bootstrap/cache
+    networks:
+      - cctv_network
+    restart: unless-stopped
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # command: ["/app/docker/setup-db.sh"]
+
+  postgresql:
+    image: postgres:17
+    container_name: cctv_postgresql
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: cctv_dashboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kambin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgresql/init:/docker-entrypoint-initdb.d
+    networks:
+      - cctv_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cctv_dashboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: cctv_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cctv_network
+    restart: unless-stopped
+
+  vite:
+    image: node:20-alpine
+    container_name: cctv_vite
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount seluruh project untuk development
+      - .:/app
+      # Node modules untuk performa
+      - vite_node_modules:/app/node_modules
+    networks:
+      - cctv_network
+    restart: unless-stopped
+    depends_on:
+      - cctv_app
+    environment:
+      - NODE_ENV=development
+      - VITE_APP_URL=http://localhost:9001
+    working_dir: /app
+    command: >
+      sh -c "
+        echo 'Installing dependencies...' &&
+        npm ci &&
+        echo 'Starting Vite development server...' &&
+        npm run dev -- --host 0.0.0.0 --port 5173
+      "
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:
+  redis_data:
+  vite_node_modules:
+
+networks:
+  cctv_network:
+    driver: bridge

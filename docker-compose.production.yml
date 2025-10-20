@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  cctv_app:
+    build:
+      context: .
+      dockerfile: ./docker/frankenphp/Dockerfile.production
+      args:
+        - ENVIRONMENT=production
+    container_name: cctv_app_prod
+    ports:
+      - "9001:80"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - redis_data:/data
+    networks:
+      - cctv_network
+    restart: unless-stopped
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_HOST=postgresql
+      - DB_PORT=5432
+      - DB_DATABASE=cctv_dashboard
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=kambin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+      - FRANKENPHP_WORKERS=32
+      - HORIZON_WORKERS=16
+
+  postgresql:
+    image: postgres:17
+    container_name: cctv_postgres_prod
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cctv_network
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=cctv_dashboard
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=kambin
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cctv_user -d cctv_dashboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: cctv_redis_prod
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cctv_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  cctv_network:
+    driver: bridge

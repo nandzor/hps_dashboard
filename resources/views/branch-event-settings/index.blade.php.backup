@@ -1,0 +1,248 @@
+@extends('layouts.app')
+
+@section('title', 'Branch Event Settings')
+@section('page-title', 'Branch Event Settings Management')
+
+@section('content')
+  <!-- Statistics Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <x-stat-card title="Total Settings" :value="$statistics['total']" icon="⚙️" color="blue" />
+    <x-stat-card title="Active Settings" :value="$statistics['active']" icon="✅" color="green" />
+    <x-stat-card title="WhatsApp Enabled" :value="$statistics['whatsapp_enabled']" icon="📱" color="purple" />
+    <x-stat-card title="Image Sending" :value="$statistics['send_image_enabled']" icon="📸" color="orange" />
+  </div>
+
+  <x-card>
+    <!-- Header -->
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div class="flex-1 max-w-md">
+          <form method="GET" action="{{ route('branch-event-settings.index') }}" class="flex">
+            <x-input name="search" :value="$search ?? ''" placeholder="Search settings..."
+              class="rounded-r-none border-r-0" />
+            @if (request()->has('per_page'))
+              <input type="hidden" name="per_page" value="{{ request()->get('per_page') }}">
+            @endif
+            <button type="submit"
+              class="px-6 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors">
+              Search
+            </button>
+          </form>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <!-- Info Text -->
+          <div class="text-sm text-gray-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
+            <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Event settings are automatically created when devices are added
+          </div>
+
+          <!-- Per Page Selector -->
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-600">Show:</span>
+            <x-per-page-selector :options="[10, 25, 50, 100]" :current="$perPage ?? 10" :url="route('branch-event-settings.index')" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WhatsApp Settings Info Section -->
+    <div class="p-6 border-b border-gray-200 bg-green-50">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="flex-shrink-0">
+            <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-sm font-medium text-gray-900">WhatsApp Configuration</h3>
+            <p class="text-sm text-gray-500">Manage WhatsApp numbers and message templates globally</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <x-button variant="success" size="sm" :href="route('whatsapp-settings.index')">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Manage WhatsApp Settings
+          </x-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="p-6 border-b border-gray-200 bg-gray-50">
+      <form method="GET" action="{{ route('branch-event-settings.index') }}"
+        class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <input type="hidden" name="search" value="{{ $search }}">
+        <input type="hidden" name="per_page" value="{{ $perPage }}">
+
+        <x-company-branch-select name="branch_id" :value="$branchId" placeholder="All Branches" />
+
+        <x-select name="device_id" :value="$deviceId">
+          <option value="">All Devices</option>
+          @foreach ($devices as $device)
+            <option value="{{ $device->device_id }}" {{ $deviceId == $device->device_id ? 'selected' : '' }}>
+              {{ $device->device_name }} ({{ $device->device_id }})
+            </option>
+          @endforeach
+        </x-select>
+
+        <x-select name="is_active" :value="$isActive">
+          <option value="">All Status</option>
+          <option value="1" {{ $isActive === '1' ? 'selected' : '' }}>Active</option>
+          <option value="0" {{ $isActive === '0' ? 'selected' : '' }}>Inactive</option>
+        </x-select>
+
+        <x-button type="submit" variant="primary" size="sm"></x-button>
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+        </svg>
+        Apply Filters
+        </x-button>
+      </form>
+    </div>
+
+    <!-- Table -->
+    <x-table :headers="['Branch', 'Device', 'Status', 'WhatsApp', 'Image', 'Actions']">
+      @forelse($eventSettings as $setting)
+        <tr class="hover:bg-blue-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10">
+                <div
+                  class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-md">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">{{ $setting->branch->branch_name ?? 'N/A' }}</div>
+                <div class="text-sm text-gray-500">{{ $setting->branch->branch_code ?? 'N/A' }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">{{ $setting->device->device_name ?? 'N/A' }}</div>
+            <div class="text-sm text-gray-500">{{ $setting->device_id }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <button onclick="toggleSetting({{ $setting->id }})"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors
+                {{ $setting->is_active ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200' }}">
+              {{ $setting->is_active ? 'Active' : 'Inactive' }}
+            </button>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+              {{ $setting->whatsapp_enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+              {{ $setting->whatsapp_enabled ? 'Enabled' : 'Disabled' }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+              {{ $setting->send_image ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+              {{ $setting->send_image ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <x-action-dropdown>
+              <x-dropdown-link :href="route('branch-event-settings.show', $setting)">
+                👁️ View Details
+              </x-dropdown-link>
+
+              <x-dropdown-link :href="route('branch-event-settings.edit', $setting)">
+                ✏️ Edit Setting
+              </x-dropdown-link>
+
+            </x-action-dropdown>
+          </td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="6" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center justify-center">
+              <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-gray-500 text-lg font-medium">No event settings found</p>
+              <p class="text-gray-400 text-sm mt-1">Try adjusting your search criteria</p>
+            </div>
+          </td>
+        </tr>
+      @endforelse
+    </x-table>
+
+    <!-- Pagination Info & Controls -->
+    <div class="px-6 py-4 border-t border-gray-200">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+        <!-- Pagination Info -->
+        <div class="text-sm text-gray-700">
+          Showing
+          <span class="font-medium">{{ $eventSettings->firstItem() ?? 0 }}</span>
+          to
+          <span class="font-medium">{{ $eventSettings->lastItem() ?? 0 }}</span>
+          of
+          <span class="font-medium">{{ $eventSettings->total() }}</span>
+          results
+          @if (request()->has('search'))
+            for "<span class="font-medium text-blue-600">{{ request()->get('search') }}</span>"
+          @endif
+        </div>
+
+        <!-- Pagination Controls -->
+        @if ($eventSettings->hasPages())
+          <x-pagination :paginator="$eventSettings" />
+        @endif
+      </div>
+    </div>
+  </x-card>
+
+
+@endsection
+
+@push('scripts')
+  <script>
+    function toggleSetting(settingId) {
+      fetch(`/branch-event-settings/${settingId}/toggle`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Reload page to update status
+            location.reload();
+          } else {
+            alert('Failed to toggle setting: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while toggling the setting.');
+        });
+    }
+
+    // Make function globally available
+    window.toggleSetting = toggleSetting;
+  </script>
+@endpush
