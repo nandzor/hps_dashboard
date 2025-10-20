@@ -24,26 +24,30 @@ class NumberHelper
         if ($absNumber >= 1000000000000) {
             // Triliun
             $value = $absNumber / 1000000000000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $currency . ' ' . $formatted . 'T';
+            $formatted = number_format($value, max($decimals, 1), '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $currency . ' ' . $formatted . 't';
         } elseif ($absNumber >= 1000000000) {
             // Miliar
             $value = $absNumber / 1000000000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $currency . ' ' . $formatted . 'M';
+            $formatted = number_format($value, max($decimals, 1), '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $currency . ' ' . $formatted . 'm';
         } elseif ($absNumber >= 1000000) {
             // Juta
             $value = $absNumber / 1000000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $currency . ' ' . $formatted . 'Jt';
+            $formatted = number_format($value, 1, '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $currency . ' ' . $formatted . 'jt';
         } elseif ($absNumber >= 100000) {
             // Ratus Ribu
             $value = $absNumber / 100000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $currency . ' ' . $formatted . 'R';
+            $formatted = number_format($value, max($decimals, 1), '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $currency . ' ' . $formatted . 'r';
         } else {
             // Ribu atau kurang
-            $formatted = number_format($absNumber, $decimals, ',', '.');
+            $formatted = number_format($absNumber, $decimals, '.', '.');
             return $sign . $currency . ' ' . $formatted;
         }
     }
@@ -67,26 +71,30 @@ class NumberHelper
         if ($absNumber >= 1000000000000) {
             // Triliun
             $value = $absNumber / 1000000000000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $formatted . 'T';
+            $formatted = number_format($value, max($decimals, 1), '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $formatted . 't';
         } elseif ($absNumber >= 1000000000) {
             // Miliar
             $value = $absNumber / 1000000000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $formatted . 'M';
+            $formatted = number_format($value, max($decimals, 1), '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $formatted . 'm';
         } elseif ($absNumber >= 1000000) {
             // Juta
             $value = $absNumber / 1000000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $formatted . 'Jt';
+            $formatted = number_format($value, 1, '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $formatted . 'jt';
         } elseif ($absNumber >= 100000) {
             // Ratus Ribu
             $value = $absNumber / 100000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $formatted . 'R';
+            $formatted = number_format($value, max($decimals, 1), '.', '');
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+            return $sign . $formatted . 'r';
         } else {
             // Ribu atau kurang
-            $formatted = number_format($absNumber, $decimals, ',', '.');
+            $formatted = number_format($absNumber, $decimals, '.', '.');
             return $sign . $formatted;
         }
     }
@@ -150,9 +158,9 @@ class NumberHelper
         } elseif ($absNumber >= 1000000000) {
             return 'M'; // Miliar
         } elseif ($absNumber >= 1000000) {
-            return 'Jt'; // Juta
+            return 'jt'; // Juta
         } elseif ($absNumber >= 100000) {
-            return 'R'; // Ratus Ribu
+            return 'r'; // Ratus Ribu
         } else {
             return ''; // No unit
         }
