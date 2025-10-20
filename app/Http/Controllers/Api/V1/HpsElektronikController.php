@@ -50,11 +50,44 @@ class HpsElektronikController extends BaseController
         // Filter by merek
         $query->whereRaw('LOWER(merek) LIKE ?', ['%' . $merek . '%']);
 
-        // Filter by barang (nama_barang)
-        $query->whereRaw('LOWER(barang) LIKE ?', ['%' . $namaBarang . '%']);
+        // Filter by barang (nama_barang) with semantic handling for specs like "4gb" vs "4/64 gb"
+        $specFromInput = $this->extractSpecs($namaBarang);
+        $onlySpecQuery = $this->isMostlySpecQuery($namaBarang);
+
+        if (!$onlySpecQuery) {
+            // Use LIKE only when user query is not primarily a spec token
+            $query->whereRaw('LOWER(barang) LIKE ?', ['%' . $namaBarang . '%']);
+        }
 
         // Clone query for different kondisi searches
         $results = collect();
+
+        // If specs provided (ram/storage), try to find direct spec matches first
+        if ($specFromInput['ram'] || $specFromInput['storage']) {
+            $specQuery = (clone $query);
+            // Build relaxed LIKE patterns to increase chance of match across various notations
+            if ($specFromInput['ram']) {
+                $ram = (string) $specFromInput['ram'];
+                $specQuery->where(function ($q) use ($ram) {
+                    $q->whereRaw('LOWER(barang) LIKE ?', ['%' . $ram . '/%'])
+                      ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $ram . ' /%'])
+                      ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $ram . ' %'])
+                      ->orWhereRaw('LOWER(barang) LIKE ?', ['%' . $ram . 'gb%']);
+                });
+            }
+            if ($specFromInput['storage']) {
+                $sto = (string) $specFromInput['storage'];
+                $specQuery->where(function ($q) use ($sto) {
+                    $q->whereRaw('LOWER(barang) LIKE ?', ['%/' . $sto . '%'])
+                      ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $sto . ' %'])
+                      ->orWhereRaw('LOWER(barang) LIKE ?', ['%' . $sto . 'gb%']);
+                });
+            }
+            $specExact = $specQuery->first();
+            if ($specExact) {
+                $results->push($specExact);
+            }
+        }
 
         // Search for exact kondisi match first
         if ($kondisiMapping['kondisi']) {
@@ -164,7 +197,7 @@ class HpsElektronikController extends BaseController
             ['keywords' => ['fullset like new', 'full set like new', 'fs like new', 'fsln'], 'kondisi' => 'fullset like new', 'grade' => 'a'],
 
             // Fullset
-            ['keywords' => ['fullset', 'full set', 'fs', 'lengkap'], 'kondisi' => 'fullset', 'grade' => 'b'],
+            ['keywords' => ['fullset', 'full set', 'fs', 'lengkap', 'full'], 'kondisi' => 'fullset', 'grade' => 'b'],
 
             // Unit Only / Unit Saja
             ['keywords' => ['unit only', 'unit saja', 'uo', 'unit aja'], 'kondisi' => 'unit only', 'grade' => 'c'],
@@ -225,9 +258,20 @@ class HpsElektronikController extends BaseController
             $score += 20;
         }
 
-        // Barang/nama_barang match
-        if (Str::contains(Str::lower($item->barang), Str::lower($searchParams['nama_barang']))) {
+        // Barang/nama_barang match + semantic spec matching
+        $inputName = Str::lower($searchParams['nama_barang']);
+        if (Str::contains(Str::lower($item->barang), $inputName)) {
             $score += 20;
+        }
+
+        // Semantic spec: match memory/storage like "4gb", "8/128", "4 64", etc.
+        $specFromInput = $this->extractSpecs($inputName);
+        $specFromItem = $this->extractSpecs(Str::lower($item->barang));
+        if ($specFromInput['ram'] && $specFromItem['ram'] && $specFromInput['ram'] == $specFromItem['ram']) {
+            $score += 10;
+        }
+        if ($specFromInput['storage'] && $specFromItem['storage'] && $specFromInput['storage'] == $specFromItem['storage']) {
+            $score += 10;
         }
 
         // Kondisi/kelengkapan match
@@ -242,5 +286,75 @@ class HpsElektronikController extends BaseController
         }
 
         return $score;
+    }
+
+    /**
+     * Extract RAM and storage spec from a free text like "4gb/64gb", "8/128", "4 64", "6+128",
+     * returning normalized integers (e.g., ['ram' => 4, 'storage' => 64]).
+     */
+    private function extractSpecs(string $text): array
+    {
+        $text = Str::of($text)->lower()->replace(['gb', 'g b'], 'gb')->value();
+        $ram = null;
+        $storage = null;
+
+        // Common patterns: 4gb/64gb, 4/64, 4 64, 4+64, 4-64, 4gb 64gb
+        $patterns = [
+            '/\b(\d{1,2})\s*gb\s*[\/\-\+\s]?\s*(\d{2,4})\s*gb\b/', // 4gb/64gb, 4gb 64gb
+            '/\b(\d{1,2})\s*[\/\-\+\s]\s*(\d{2,4})\b/',             // 4/64, 4-64, 4 64, 4+64
+            '/\b(\d{1,2})\s*gb\b/',                                      // 4gb
+            '/\b(\d{2,4})\s*gb\b/',                                      // 64gb
+        ];
+
+        foreach ($patterns as $idx => $regex) {
+            if (preg_match($regex, $text, $m)) {
+                if ($idx === 0) {
+                    $ram = isset($m[1]) ? (int) $m[1] : null;
+                    $storage = isset($m[2]) ? (int) $m[2] : null;
+                    break;
+                } elseif ($idx === 1) {
+                    $ram = isset($m[1]) ? (int) $m[1] : null;
+                    $storage = isset($m[2]) ? (int) $m[2] : null;
+                } elseif ($idx === 2 && $ram === null) {
+                    $ram = (int) $m[1];
+                } elseif ($idx === 3 && $storage === null) {
+                    $storage = (int) $m[1];
+                }
+            }
+        }
+
+        return [
+            'ram' => $ram,
+            'storage' => $storage ?? $this->inferDefaultStorage($ram),
+        ];
+    }
+
+    /** Determine if the query is mostly a specs-only search (e.g., "4/64", "8gb 128gb"). */
+    private function isMostlySpecQuery(string $text): bool
+    {
+        $text = trim(Str::lower($text));
+        // If after stripping non spec tokens the string becomes very short, consider it spec
+        $stripped = preg_replace('/[^0-9\s\/\-\+a-z]/', ' ', $text);
+        $spec = preg_replace('/[^0-9\s\/\-\+g b]/', '', $text);
+        $strippedLen = strlen(preg_replace('/\s+/', '', $stripped));
+        $specLen = strlen(preg_replace('/\s+/', '', $spec));
+        return $specLen > 0 && ($strippedLen - $specLen) <= 2; // mostly spec
+    }
+
+    /**
+     * Infer default storage when only RAM is provided (business rule):
+     * - 8GB RAM → assume 128GB storage
+     */
+    private function inferDefaultStorage(?int $ram): ?int
+    {
+        if ($ram === null) {
+            return null;
+        }
+        // Business defaults: map common RAM-only queries to typical storage
+        // 4GB -> 64GB, 6GB -> 128GB, 8GB -> 128GB
+        if ($ram === 4) return 64;
+        if ($ram === 6) return 128;
+        if ($ram === 8) return 128;
+        return null;
     }
 }
