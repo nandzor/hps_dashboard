@@ -15,7 +15,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h1 class="text-3xl font-bold text-white mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h1>
-              <p class="text-blue-100">Here's what's happening with your CCTV system today.</p>
+              <p class="text-blue-100">Here's what's happening with your HPS system today.</p>
             </div>
             <div class="hidden md:block">
               <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4">
@@ -30,141 +30,184 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <x-stat-card title="Total Groups" :value="$totalGroups" color="blue" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4\'/>'" />
+      <!-- Users -->
+      <x-stat-card title="Total Users" :value="$totalUsers" color="blue" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z\'/>'" />
 
-      <x-stat-card title="Total Branches" :value="$totalBranches" color="green" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4\'/>'" />
+      <!-- HPS Emas -->
+      <x-stat-card title="HPS Emas Items" :value="$totalHpsEmas" color="yellow" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'/>'" />
 
-      <x-stat-card title="Total Devices" :value="$totalDevices" color="purple" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z\'/>'" />
+      <!-- HPS Elektronik -->
+      <x-stat-card title="HPS Elektronik Items" :value="$totalHpsElektronik" color="green" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z\'/>'" />
 
-      <x-stat-card title="Today's Detections" :value="$todayDetections" color="orange" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M15 12a3 3 0 11-6 0 3 3 0 016 0z\'/><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z\'/>'"
-        :trend="$todayDetectionTrend" :trendUp="$todayDetectionTrendUp" />
+      <!-- FAQ -->
+      <x-stat-card title="FAQ Items" :value="$totalFaq" color="purple" :icon="'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'/>'" />
     </div>
 
-    <!-- Re-ID Statistics & Detection Trend -->
+    <!-- HPS Value Statistics -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <x-card title="Person Detection Stats (Today)">
+      <!-- HPS Emas Value -->
+      <x-card title="HPS Emas Value Statistics">
         <div class="space-y-4">
           <div class="flex justify-between items-center">
-            <span class="text-gray-600">Total Records:</span>
-            <span class="text-2xl font-bold text-gray-900">{{ $reIdStats['total_records'] }}</span>
+            <span class="text-gray-600">Total Value:</span>
+            <span class="text-2xl font-bold text-yellow-600">{{ format_currency_id($totalHpsEmasValue) }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-gray-600">Active:</span>
-            <span class="text-xl font-semibold text-green-600">{{ $reIdStats['active_records'] }}</span>
+            <span class="text-gray-600">Average Value:</span>
+            <span class="text-xl font-semibold text-yellow-500">{{ format_currency_id($avgHpsEmasValue) }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-gray-600">Inactive:</span>
-            <span class="text-xl font-semibold text-red-600">{{ $reIdStats['inactive_records'] }}</span>
-          </div>
-          <div class="flex justify-between items-center pt-4 border-t border-gray-200">
-            <span class="text-gray-600">Unique Persons:</span>
-            <span class="text-xl font-semibold text-blue-600">{{ $reIdStats['unique_persons'] }}</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Total Detections:</span>
-            <span class="text-xl font-semibold text-purple-600">{{ $reIdStats['total_detections'] }}</span>
+            <span class="text-gray-600">Total Items:</span>
+            <span class="text-xl font-semibold text-gray-700">{{ $totalHpsEmas }}</span>
           </div>
         </div>
       </x-card>
 
-      <x-detection-trend-chart :data="$detectionTrend" title="Detection Trend (Last 7 Days)" />
+      <!-- HPS Elektronik Value -->
+      <x-card title="HPS Elektronik Value Statistics">
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Total Value:</span>
+            <span class="text-2xl font-bold text-green-600">{{ format_currency_id($totalHpsElektronikValue) }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Average Value:</span>
+            <span class="text-xl font-semibold text-green-500">{{ format_currency_id($avgHpsElektronikValue) }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Active Items:</span>
+            <span class="text-xl font-semibold text-green-600">{{ $activeHpsElektronik }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Total Items:</span>
+            <span class="text-xl font-semibold text-gray-700">{{ $totalHpsElektronik }}</span>
+          </div>
+        </div>
+      </x-card>
     </div>
 
-    <!-- Recent Detections & Events -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Recent Detections -->
-      <x-card title="Recent Detections" :padding="false">
+    <!-- Recent Data Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Recent HPS Emas -->
+      <x-card title="Recent HPS Emas" :padding="false">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Re-ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Barang</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              @forelse($recentDetections as $detection)
+              @forelse($recentHpsEmas as $item)
                 <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-4 py-3 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">
-                      {{ Str::limit($detection->reIdMaster->re_id ?? 'N/A', 20) }}
+                      {{ Str::limit($item->jenis_barang, 20) }}
                     </div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{{ $detection->branch->branch_name ?? 'N/A' }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{{ $detection->device->device_name ?? 'N/A' }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ $detection->detection_timestamp->diffForHumans() }}
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    Rp {{ number_format($item->nilai_taksiran_rp, 0, ',', '.') }}
                   </td>
                 </tr>
               @empty
                 <tr>
-                  <td colspan="4" class="px-6 py-8 text-center text-gray-400">
-                    No recent detections
+                  <td colspan="2" class="px-4 py-8 text-center text-gray-400">
+                    No HPS Emas data
                   </td>
                 </tr>
               @endforelse
             </tbody>
           </table>
         </div>
-        @if ($hasRecentDetections)
-          <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-            <a href="{{ route('re-id-masters.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              View all detections →
+        @if ($recentHpsEmas->count() > 0)
+          <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+            <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              View all HPS Emas →
             </a>
           </div>
         @endif
       </x-card>
 
-      <!-- Recent Events -->
-      <x-card title="Recent Events" :padding="false">
+      <!-- Recent HPS Elektronik -->
+      <x-card title="Recent HPS Elektronik" :padding="false">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              @forelse($recentEvents as $event)
+              @forelse($recentHpsElektronik as $item)
                 <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <x-badge :variant="$event->event_type === 'detection' ? 'success' : ($event->event_type === 'alert' ? 'danger' : ($event->event_type === 'motion' ? 'warning' : 'gray'))">
-                      {{ ucfirst($event->event_type) }}
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ Str::limit($item->barang, 15) }}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    Rp {{ number_format($item->harga, 0, ',', '.') }}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <x-badge :variant="$item->active ? 'success' : 'danger'">
+                      {{ $item->active ? 'Aktif' : 'Tidak Aktif' }}
                     </x-badge>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ $event->branch->branch_name ?? 'N/A' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ $event->device->device_name ?? 'N/A' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ $event->event_timestamp->diffForHumans() }}
                   </td>
                 </tr>
               @empty
                 <tr>
-                  <td colspan="4" class="px-6 py-8 text-center text-gray-400">
-                    No recent events
+                  <td colspan="3" class="px-4 py-8 text-center text-gray-400">
+                    No HPS Elektronik data
                   </td>
                 </tr>
               @endforelse
             </tbody>
           </table>
         </div>
-        @if ($hasRecentEvents)
-          <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
-            <a href="{{ route('event-logs.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              View all events →
+        @if ($recentHpsElektronik->count() > 0)
+          <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+            <a href="{{ route('hps-elektronik.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              View all HPS Elektronik →
+            </a>
+          </div>
+        @endif
+      </x-card>
+
+      <!-- Recent FAQ -->
+      <x-card title="Recent FAQ" :padding="false">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Question</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              @forelse($recentFaq as $item)
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">
+                    <div class="text-sm text-gray-900">
+                      {{ Str::limit($item->question, 30) }}
+                    </div>
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td class="px-4 py-8 text-center text-gray-400">
+                    No FAQ data
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+        @if ($recentFaq->count() > 0)
+          <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+            <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              View all FAQ →
             </a>
           </div>
         @endif
@@ -175,42 +218,36 @@
     <div class="mt-8">
       <x-card title="Quick Actions">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <a href="{{ route('company-groups.create') }}"
+          <a href="{{ route('users.index') }}"
             class="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
             <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
-            <span class="text-sm font-medium text-gray-700">Add Group</span>
+            <span class="text-sm font-medium text-gray-700">Manage Users</span>
           </a>
 
-          <a href="{{ route('company-branches.create') }}"
+          <a href="#"
+            class="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors">
+            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-medium text-gray-700">HPS Emas</span>
+          </a>
+
+          <a href="{{ route('hps-elektronik.index') }}"
             class="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
             <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            <span class="text-sm font-medium text-gray-700">Add Branch</span>
+            <span class="text-sm font-medium text-gray-700">HPS Elektronik</span>
           </a>
 
-          <a href="{{ route('device-masters.create') }}"
+          <a href="#"
             class="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
             <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span class="text-sm font-medium text-gray-700">Add Device</span>
-          </a>
-
-          <a href="{{ route('cctv-layouts.create') }}"
-            class="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors">
-            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-            </svg>
-            <span class="text-sm font-medium text-gray-700">Add Layout</span>
+            <span class="text-sm font-medium text-gray-700">FAQ Chatbot</span>
           </a>
         </div>
       </x-card>

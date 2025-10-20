@@ -15,6 +15,7 @@ $colors = [
   'orange' => 'from-orange-500 to-orange-600',
   'red' => 'from-red-500 to-red-600',
   'indigo' => 'from-indigo-500 to-indigo-600',
+  'yellow' => 'from-yellow-500 to-yellow-600',
 ];
 
 $iconBg = [
@@ -24,6 +25,7 @@ $iconBg = [
   'orange' => 'bg-orange-100',
   'red' => 'bg-red-100',
   'indigo' => 'bg-indigo-100',
+  'yellow' => 'bg-yellow-100',
 ];
 @endphp
 

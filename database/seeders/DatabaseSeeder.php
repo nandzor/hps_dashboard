@@ -38,6 +38,13 @@ class DatabaseSeeder extends Seeder {
 
             // 8. Event logs (depends on branches, devices, and re-id data)
             EventLogSeeder::class,
+
+            // 9. HPS data
+            HpsEmasSeeder::class,
+            HpsElektronikSeeder::class,
+
+            // 10. FAQ data
+            FaqChatbotQnaSeeder::class,
         ]);
 
         $this->command->info('Database seeded successfully!');

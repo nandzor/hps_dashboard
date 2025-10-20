@@ -15,6 +15,9 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ApiCredentialController;
 use App\Http\Controllers\BranchEventSettingController;
 use App\Http\Controllers\WhatsAppSettingsController;
+use App\Http\Controllers\HpsElektronikController;
+use App\Http\Controllers\HpsEmasController;
+use App\Http\Controllers\FaqChatbotQnaController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -46,6 +49,20 @@ Route::middleware('auth')->group(function () {
 
     // User CRUD
     Route::resource('users', UserController::class);
+
+    // HPS Elektronik CRUD
+    Route::resource('hps-elektronik', HpsElektronikController::class);
+    Route::post('/hps-elektronik/{hpsElektronik}/toggle', [HpsElektronikController::class, 'toggle'])->name('hps-elektronik.toggle');
+    Route::get('/hps-elektronik/export/download', [HpsElektronikController::class, 'export'])->name('hps-elektronik.export');
+
+    // HPS Emas Management (force parameter to 'hpsEmas' to avoid pluralization issues)
+    Route::resource('hps-emas', HpsEmasController::class)
+        ->parameters(['hps-emas' => 'hpsEmas']);
+    Route::post('/hps-emas/{hpsEmas}/toggle', [HpsEmasController::class, 'toggle'])->name('hps-emas.toggle');
+    Route::get('/hps-emas/export/download', [HpsEmasController::class, 'export'])->name('hps-emas.export');
+
+    // FAQ Chatbot QnA CRUD
+    Route::resource('faq-chatbot-qna', FaqChatbotQnaController::class);
 
     // Company Branches CRUD
     Route::resource('company-branches', CompanyBranchController::class);
