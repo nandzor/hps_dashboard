@@ -1,0 +1,94 @@
+{
+  "info": {
+    "name": "HPS Dashboard API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "7a7c2f1f-3b7e-4a3f-9e8b-3e9f1b2c0abc"
+  },
+  "item": [
+    {
+      "name": "HPS Elektronik",
+      "item": [
+        {
+          "name": "Check Price (Grade & Harga)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-token", "value": "{{x-token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hps-elektronik/check-price",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "hps-elektronik", "check-price"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jenis_barang\": \"handphone\",\n  \"merek\": \"samsung\",\n  \"nama_barang\": \"galaxy s23\",\n  \"kelengkapan\": \"fullset like new\"\n}"
+            },
+            "description": "Mengembalikan grade dan harga berdasarkan jenis_barang, merek, nama_barang, dan kelengkapan."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-token", "value": "{{x-token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hps-elektronik/check-price",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "hps-elektronik", "check-price"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"jenis_barang\": \"handphone\",\n  \"merek\": \"samsung\",\n  \"nama_barang\": \"galaxy s23\",\n  \"kelengkapan\": \"fullset like new\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Data harga berhasil ditemukan\",\n  \"data\": {\n    \"request\": {\n      \"jenis_barang\": \"handphone\",\n      \"merek\": \"samsung\",\n      \"nama_barang\": \"galaxy s23\",\n      \"kelengkapan\": \"fullset like new\"\n    },\n    \"results\": [\n      {\n        \"id\": 123,\n        \"jenis_barang\": \"Handphone\",\n        \"merek\": \"Samsung\",\n        \"barang\": \"Galaxy S23 8/128GB\",\n        \"tahun\": 2023,\n        \"grade\": \"A\",\n        \"kondisi\": \"Fullset Like New\",\n        \"harga\": 5780000,\n        \"harga_formatted\": \"Rp 5.8jt\",\n        \"match_score\": 100\n      }\n    ],\n    \"best_match\": {\n      \"id\": 123,\n      \"jenis_barang\": \"Handphone\",\n      \"merek\": \"Samsung\",\n      \"barang\": \"Galaxy S23 8/128GB\",\n      \"tahun\": 2023,\n      \"grade\": \"A\",\n      \"kondisi\": \"Fullset Like New\",\n      \"harga\": 5780000,\n      \"harga_formatted\": \"Rp 5.8jt\",\n      \"match_score\": 100\n    }\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-token", "value": "{{x-token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hps-elektronik/check-price",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "hps-elektronik", "check-price"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"jenis_barang\": \"handphone\",\n  \"merek\": \"nonexistent\",\n  \"nama_barang\": \"xxx\",\n  \"kelengkapan\": \"unit only\"\n}"
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Tidak ditemukan data yang sesuai\",\n  \"error\": {\n    \"code\": \"NOT_FOUND\"\n  },\n  \"meta\": {\n    \"timestamp\": \"...\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "{{baseUrl}}" },
+    { "key": "x-token", "value": "{{x-token}}" }
+  ]
+}
+
+

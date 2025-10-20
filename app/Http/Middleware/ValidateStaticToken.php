@@ -14,7 +14,7 @@ class ValidateStaticToken
     public function handle(Request $request, Closure $next): Response
     {
         $staticToken = config('api.static_token');
-        
+
         if (empty($staticToken)) {
             return response()->json([
                 'success' => false,
@@ -22,7 +22,8 @@ class ValidateStaticToken
             ], 500);
         }
 
-        $token = $request->bearerToken();
+        // Read static token from custom header 'x-token'
+        $token = $request->header('x-token');
 
         if (!$token || $token !== $staticToken) {
             return response()->json([
