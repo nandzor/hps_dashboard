@@ -22,6 +22,11 @@
             <x-per-page-selector :options="$perPageOptions ?? [10,25,50,100]" :current="$perPage ?? 10" :url="route('faq-chatbot-qna.index')" type="server" />
           </div>
 
+          <x-button :href="route('faq-chatbot-qna.import.form')" variant="secondary" size="sm">
+            <x-icon name="upload" class="w-4 h-4 mr-1.5" />
+            Import
+          </x-button>
+
           <x-button :href="route('faq-chatbot-qna.create')" variant="primary" size="sm">
             <x-icon name="plus" class="w-4 h-4 mr-1.5" />
             Add FAQ

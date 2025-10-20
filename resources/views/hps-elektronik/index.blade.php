@@ -73,7 +73,11 @@
             <x-per-page-selector :options="$perPageOptions ?? [10, 25, 50, 100]" :current="$perPage ?? 10" :url="route('hps-elektronik.index')" type="server" />
           </div>
 
-          <!-- Add HPS Elektronik Button -->
+          <!-- Import & Add Buttons -->
+          <x-button :href="route('hps-elektronik.import.form')" variant="secondary" size="sm">
+            <x-icon name="upload" class="w-4 h-4 mr-1.5" />
+            Import
+          </x-button>
           <x-button variant="primary" size="sm" :href="route('hps-elektronik.create')">
             <x-icon name="plus" class="w-4 h-4 mr-1.5" />
             Add HPS Elektronik

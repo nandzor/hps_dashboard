@@ -67,7 +67,11 @@
             <x-per-page-selector :options="$perPageOptions ?? [10, 25, 50, 100]" :current="$perPage ?? 10" :url="route('hps-emas.index')" type="server" />
           </div>
 
-          <!-- Add HPS Emas Button -->
+          <!-- Import & Add Buttons -->
+          <x-button :href="route('hps-emas.import.form')" variant="secondary" size="sm">
+            <x-icon name="upload" class="w-4 h-4 mr-1.5" />
+            Import
+          </x-button>
           <a href="{{ route('hps-emas.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
             <x-icon name="plus" class="w-4 h-4 inline mr-1" />
             Add HPS Emas

@@ -8,6 +8,9 @@ use App\Models\HpsElektronik;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Exports\HpsElektronikExport;
+use App\Exports\HpsElektronikTemplateExport;
+use App\Imports\HpsElektronikImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HpsElektronikController extends Controller
 {
@@ -57,6 +60,36 @@ class HpsElektronikController extends Controller
     {
         $filterOptions = $this->hpsElektronikService->getFilterOptions();
         return view('hps-elektronik.create', compact('filterOptions'));
+    }
+
+    /**
+     * Show import form
+     */
+    public function importForm()
+    {
+        return view('hps-elektronik.import');
+    }
+
+    /**
+     * Download Excel template
+     */
+    public function downloadTemplate()
+    {
+        return Excel::download(new HpsElektronikTemplateExport(), 'template-hps-elektronik.xlsx');
+    }
+
+    /**
+     * Handle import
+     */
+    public function importStore(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ]);
+
+        Excel::import(new HpsElektronikImport(), $request->file('file'));
+
+        return redirect()->route('hps-elektronik.index')->with('success', 'Import completed');
     }
 
     /**

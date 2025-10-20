@@ -8,6 +8,9 @@ use App\Models\HpsEmas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Exports\HpsEmasExport;
+use App\Exports\HpsEmasTemplateExport;
+use App\Imports\HpsEmasImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HpsEmasController extends Controller
 {
@@ -195,5 +198,28 @@ class HpsEmasController extends Controller
             ['hpsEmas' => $data, 'filters' => $filters, 'statistics' => $statistics],
             'hps-emas-' . date('Y-m-d-H-i-s')
         );
+    }
+
+    /**
+     * Import form
+     */
+    public function importForm()
+    {
+        return view('hps-emas.import');
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new HpsEmasTemplateExport(), 'template-hps-emas.xlsx');
+    }
+
+    public function importStore(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ]);
+
+        Excel::import(new HpsEmasImport(), $request->file('file'));
+        return redirect()->route('hps-emas.index')->with('success', 'Import completed');
     }
 }

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\FaqChatbotQna;
+use App\Imports\FaqChatbotQnaImport;
+use App\Exports\FaqChatbotQnaTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class FaqChatbotQnaController extends Controller
 {
@@ -37,6 +40,26 @@ class FaqChatbotQnaController extends Controller
     public function create()
     {
         return view('faq-chatbot-qna.create');
+    }
+
+    public function importForm()
+    {
+        return view('faq-chatbot-qna.import');
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new FaqChatbotQnaTemplateExport(), 'template-faq-chatbot-qna.xlsx');
+    }
+
+    public function importStore(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ]);
+
+        Excel::import(new FaqChatbotQnaImport(), $request->file('file'));
+        return redirect()->route('faq-chatbot-qna.index')->with('success', 'FAQ import completed');
     }
 
     /**
