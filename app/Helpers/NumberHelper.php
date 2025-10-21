@@ -39,14 +39,13 @@ class NumberHelper
             $formatted = number_format($value, 1, '.', '');
             $formatted = rtrim(rtrim($formatted, '0'), '.');
             return $sign . $currency . ' ' . $formatted . 'jt';
-        } elseif ($absNumber >= 100000) {
-            // Ratus Ribu
-            $value = $absNumber / 100000;
-            $formatted = number_format($value, max($decimals, 1), '.', '');
-            $formatted = rtrim(rtrim($formatted, '0'), '.');
-            return $sign . $currency . ' ' . $formatted . 'r';
+        } elseif ($absNumber >= 1000) {
+            // Ribu
+            $value = round($absNumber / 1000);
+            $formatted = number_format($value, 0, '.', '');
+            return $sign . $currency . ' ' . $formatted . 'rb';
         } else {
-            // Ribu atau kurang
+            // Kurang dari ribu
             $formatted = number_format($absNumber, $decimals, '.', '.');
             return $sign . $currency . ' ' . $formatted;
         }
@@ -86,14 +85,13 @@ class NumberHelper
             $formatted = number_format($value, 1, '.', '');
             $formatted = rtrim(rtrim($formatted, '0'), '.');
             return $sign . $formatted . 'jt';
-        } elseif ($absNumber >= 100000) {
-            // Ratus Ribu
-            $value = $absNumber / 100000;
-            $formatted = number_format($value, max($decimals, 1), '.', '');
-            $formatted = rtrim(rtrim($formatted, '0'), '.');
-            return $sign . $formatted . 'r';
+        } elseif ($absNumber >= 1000) {
+            // Ribu
+            $value = round($absNumber / 1000);
+            $formatted = number_format($value, 0, '.', '');
+            return $sign . $formatted . 'rb';
         } else {
-            // Ribu atau kurang
+            // Kurang dari ribu
             $formatted = number_format($absNumber, $decimals, '.', '.');
             return $sign . $formatted;
         }
@@ -131,13 +129,13 @@ class NumberHelper
             $value = $absNumber / 1000000;
             $formatted = number_format($value, $decimals, ',', '.');
             return $sign . $currency . ' ' . $formatted . ' Juta';
-        } elseif ($absNumber >= 100000) {
-            // Ratus Ribu
-            $value = $absNumber / 100000;
-            $formatted = number_format($value, $decimals, ',', '.');
-            return $sign . $formatted . ' Ratus Ribu';
+        } elseif ($absNumber >= 1000) {
+            // Ribu
+            $value = round($absNumber / 1000);
+            $formatted = number_format($value, 0, ',', '.');
+            return $sign . $currency . ' ' . $formatted . ' Ribu';
         } else {
-            // Ribu atau kurang
+            // Kurang dari ribu
             $formatted = number_format($absNumber, $decimals, ',', '.');
             return $sign . $currency . ' ' . $formatted;
         }
@@ -159,8 +157,8 @@ class NumberHelper
             return 'M'; // Miliar
         } elseif ($absNumber >= 1000000) {
             return 'jt'; // Juta
-        } elseif ($absNumber >= 100000) {
-            return 'r'; // Ratus Ribu
+        } elseif ($absNumber >= 1000) {
+            return 'rb'; // Ribu
         } else {
             return ''; // No unit
         }
@@ -182,8 +180,8 @@ class NumberHelper
             return 'Miliar';
         } elseif ($absNumber >= 1000000) {
             return 'Juta';
-        } elseif ($absNumber >= 100000) {
-            return 'Ratus Ribu';
+        } elseif ($absNumber >= 1000) {
+            return 'Ribu';
         } else {
             return '';
         }

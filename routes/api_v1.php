@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\HpsElektronikController;
+use App\Http\Controllers\Api\V1\HpsEmasController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,4 +32,7 @@ Route::middleware('api.session|auth:sanctum')->group(function () {
 
 // HPS Elektronik price checking API (requires static token via x-token header)
 Route::middleware('static.token')->post('/hps-elektronik/check-price', [HpsElektronikController::class, 'checkPrice'])->name('v1.hps-elektronik.check-price');
+
+// HPS Emas price checking API (requires static token via x-token header)
+Route::middleware('static.token')->post('/hps-emas/check-price', [HpsEmasController::class, 'checkPrice'])->name('v1.hps-emas.check-price');
 
