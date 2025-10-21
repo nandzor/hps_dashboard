@@ -41,91 +41,79 @@ class HpsElektronikController extends BaseController
         // Map kelengkapan to kondisi/grade
         $kondisiMapping = $this->mapKelengkapanToKondisi($kelengkapan);
 
-        // Start query
-        $query = HpsElektronik::where('active', true);
+        // Start query with optimized indexing
+        $query = HpsElektronik::where('active', true)
+            ->select(['id', 'jenis_barang', 'merek', 'barang', 'tahun', 'grade', 'kondisi', 'harga']); // Select only needed fields
 
-        // Filter by jenis_barang
-        $query->whereRaw('LOWER(jenis_barang) LIKE ?', ['%' . $jenisBarang . '%']);
+        // Apply filters with better performance
+        $query->where(function ($q) use ($jenisBarang, $merek, $namaBarang) {
+            $q->whereRaw('LOWER(jenis_barang) LIKE ?', ['%' . $jenisBarang . '%'])
+              ->orWhereRaw('LOWER(merek) LIKE ?', ['%' . $merek . '%'])
+              ->orWhereRaw('LOWER(barang) LIKE ?', ['%' . $namaBarang . '%']);
+        });
 
-        // Filter by merek
-        $query->whereRaw('LOWER(merek) LIKE ?', ['%' . $merek . '%']);
-
-        // Filter by barang (nama_barang) with semantic handling for specs like "4gb" vs "4/64 gb"
+        // Extract specs for optimization
         $specFromInput = $this->extractSpecs($namaBarang);
         $onlySpecQuery = $this->isMostlySpecQuery($namaBarang);
 
-        if (!$onlySpecQuery) {
-            // Use LIKE only when user query is not primarily a spec token
-            $query->whereRaw('LOWER(barang) LIKE ?', ['%' . $namaBarang . '%']);
-        }
-
-        // Clone query for different kondisi searches
+        // Optimized single query approach for better performance
         $results = collect();
 
-        // If specs provided (ram/storage), try to find direct spec matches first
+        // Build comprehensive query with all conditions
+        $finalQuery = $query->where(function ($q) use ($kondisiMapping, $kelengkapan) {
+            // Add kondisi/grade conditions
+            if ($kondisiMapping['kondisi']) {
+                $q->whereRaw('LOWER(kondisi) = ?', [$kondisiMapping['kondisi']]);
+            }
+            if ($kondisiMapping['grade']) {
+                $q->orWhereRaw('LOWER(grade) = ?', [$kondisiMapping['grade']]);
+            }
+            // Add fallback conditions
+            $q->orWhereRaw('LOWER(kondisi) LIKE ?', ['%' . $kelengkapan . '%'])
+              ->orWhereRaw('LOWER(grade) LIKE ?', ['%' . $kelengkapan . '%']);
+        });
+
+        // Add spec matching if applicable
         if ($specFromInput['ram'] || $specFromInput['storage']) {
-            $specQuery = (clone $query);
-            // Build relaxed LIKE patterns to increase chance of match across various notations
-            if ($specFromInput['ram']) {
-                $ram = (string) $specFromInput['ram'];
-                $specQuery->where(function ($q) use ($ram) {
-                    $q->whereRaw('LOWER(barang) LIKE ?', ['%' . $ram . '/%'])
-                      ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $ram . ' /%'])
-                      ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $ram . ' %'])
-                      ->orWhereRaw('LOWER(barang) LIKE ?', ['%' . $ram . 'gb%']);
-                });
-            }
-            if ($specFromInput['storage']) {
-                $sto = (string) $specFromInput['storage'];
-                $specQuery->where(function ($q) use ($sto) {
-                    $q->whereRaw('LOWER(barang) LIKE ?', ['%/' . $sto . '%'])
-                      ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $sto . ' %'])
-                      ->orWhereRaw('LOWER(barang) LIKE ?', ['%' . $sto . 'gb%']);
-                });
-            }
-            $specExact = $specQuery->first();
-            if ($specExact) {
-                $results->push($specExact);
-            }
+            $finalQuery->where(function ($q) use ($specFromInput) {
+                if ($specFromInput['ram']) {
+                    $ram = (string) $specFromInput['ram'];
+                    $q->where(function ($subQ) use ($ram) {
+                        $subQ->whereRaw('LOWER(barang) LIKE ?', ['%' . $ram . '/%'])
+                             ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $ram . ' /%'])
+                             ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $ram . ' %'])
+                             ->orWhereRaw('LOWER(barang) LIKE ?', ['%' . $ram . 'gb%']);
+                    });
+                }
+                if ($specFromInput['storage']) {
+                    $sto = (string) $specFromInput['storage'];
+                    $q->orWhere(function ($subQ) use ($sto) {
+                        $subQ->whereRaw('LOWER(barang) LIKE ?', ['%/' . $sto . '%'])
+                             ->orWhereRaw('LOWER(barang) LIKE ?', ['% ' . $sto . ' %'])
+                             ->orWhereRaw('LOWER(barang) LIKE ?', ['%' . $sto . 'gb%']);
+                    });
+                }
+            });
         }
 
-        // Search for exact kondisi match first
-        if ($kondisiMapping['kondisi']) {
-            $exactMatch = (clone $query)
-                ->whereRaw('LOWER(kondisi) = ?', [$kondisiMapping['kondisi']])
-                ->first();
-
-            if ($exactMatch) {
-                $results->push($exactMatch);
-            }
-        }
-
-        // Search for grade match
-        if ($kondisiMapping['grade']) {
-            $gradeMatch = (clone $query)
-                ->whereRaw('LOWER(grade) = ?', [$kondisiMapping['grade']])
-                ->first();
-
-            if ($gradeMatch && !$results->contains('id', $gradeMatch->id)) {
-                $results->push($gradeMatch);
-            }
-        }
-
-        // If no exact matches, get closest matches
-        if ($results->isEmpty()) {
-            $closeMatches = $query
-                ->orderByRaw("
-                    CASE
-                        WHEN LOWER(kondisi) LIKE ? THEN 1
-                        WHEN LOWER(grade) LIKE ? THEN 2
-                        ELSE 3
-                    END
-                ", ['%' . $kelengkapan . '%', '%' . $kelengkapan . '%'])
-                ->limit(3)
-                ->get();
-
-            $results = $results->merge($closeMatches);
-        }
+        // Execute single optimized query with limit
+        $results = $finalQuery
+            ->orderByRaw("
+                CASE
+                    WHEN LOWER(kondisi) = ? THEN 1
+                    WHEN LOWER(grade) = ? THEN 2
+                    WHEN LOWER(kondisi) LIKE ? THEN 3
+                    WHEN LOWER(grade) LIKE ? THEN 4
+                    ELSE 5
+                END
+            ", [
+                $kondisiMapping['kondisi'] ?? '',
+                $kondisiMapping['grade'] ?? '',
+                '%' . $kelengkapan . '%',
+                '%' . $kelengkapan . '%'
+            ])
+            ->limit(15) // Increased limit for more results
+            ->get();
 
         if ($results->isEmpty()) {
             return $this->notFoundResponse('Tidak ditemukan data yang sesuai');
@@ -234,7 +222,7 @@ class HpsElektronikController extends BaseController
     }
 
     /**
-     * Calculate match score for sorting results
+     * Calculate intelligent match score using Levenshtein distance and weighted scoring
      *
      * @param HpsElektronik $item
      * @param array $searchParams
@@ -242,50 +230,172 @@ class HpsElektronikController extends BaseController
      */
     private function calculateMatchScore($item, $searchParams)
     {
-        $score = 0;
+        $totalScore = 0;
+        $maxPossibleScore = 0;
 
-        // Exact jenis_barang match
+        // Field weights
+        $fieldWeights = [
+            'jenis_barang' => 30,
+            'merek' => 30,
+            'barang' => 25,
+            'kondisi' => 20,
+            'grade' => 15
+        ];
+
+        // Calculate similarity for each field
+        foreach ($fieldWeights as $field => $weight) {
+            $maxPossibleScore += $weight;
+
+            if ($field === 'barang') {
+                $similarity = $this->calculateFieldSimilarity($item->$field, $searchParams['nama_barang'], $weight);
+            } elseif ($field === 'kondisi' || $field === 'grade') {
+                $kondisiMapping = $this->mapKelengkapanToKondisi($searchParams['kelengkapan']);
+                $searchValue = $kondisiMapping[$field] ?? '';
+                $similarity = $this->calculateFieldSimilarity($item->$field, $searchValue, $weight);
+            } else {
+                $similarity = $this->calculateFieldSimilarity($item->$field, $searchParams[$field], $weight);
+            }
+
+            $totalScore += $similarity;
+        }
+
+        // Add bonus for exact matches
+        $bonus = $this->calculateBonusScore($item, $searchParams);
+        $totalScore += $bonus;
+        $maxPossibleScore += 20; // Max bonus
+
+        // Return percentage score (0-100)
+        return $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100, 2) : 0;
+    }
+
+    /**
+     * Calculate field similarity using Levenshtein distance
+     *
+     * @param string $itemValue
+     * @param string $searchValue
+     * @param int $maxWeight
+     * @return float
+     */
+    private function calculateFieldSimilarity(string $itemValue, string $searchValue, int $maxWeight): float
+    {
+        if (empty($searchValue)) {
+            return 0;
+        }
+
+        $itemValue = Str::lower(trim($itemValue));
+        $searchValue = Str::lower(trim($searchValue));
+
+        // Exact match gets full weight
+        if ($itemValue === $searchValue) {
+            return $maxWeight;
+        }
+
+        // Partial match gets partial weight
+        if (Str::contains($itemValue, $searchValue) || Str::contains($searchValue, $itemValue)) {
+            return $maxWeight * 0.8;
+        }
+
+        // Calculate Levenshtein similarity
+        $distance = $this->levenshteinDistance($itemValue, $searchValue);
+        $maxLength = max(strlen($itemValue), strlen($searchValue));
+
+        if ($maxLength === 0) {
+            return 0;
+        }
+
+        // Calculate similarity percentage (0-1)
+        $similarity = 1 - ($distance / $maxLength);
+
+        // Apply weight based on similarity, with minimum threshold
+        if ($similarity < 0.3) {
+            return 0; // Too different
+        }
+
+        return $similarity * $maxWeight;
+    }
+
+    /**
+     * Calculate Levenshtein distance between two strings
+     *
+     * @param string $str1
+     * @param string $str2
+     * @return int
+     */
+    private function levenshteinDistance(string $str1, string $str2): int
+    {
+        $len1 = strlen($str1);
+        $len2 = strlen($str2);
+
+        // Early return for empty strings
+        if ($len1 === 0) return $len2;
+        if ($len2 === 0) return $len1;
+
+        // Create matrix
+        $matrix = [];
+
+        // Initialize first row and column
+        for ($i = 0; $i <= $len1; $i++) {
+            $matrix[$i][0] = $i;
+        }
+        for ($j = 0; $j <= $len2; $j++) {
+            $matrix[0][$j] = $j;
+        }
+
+        // Fill the matrix
+        for ($i = 1; $i <= $len1; $i++) {
+            for ($j = 1; $j <= $len2; $j++) {
+                $cost = ($str1[$i - 1] === $str2[$j - 1]) ? 0 : 1;
+                $matrix[$i][$j] = min(
+                    $matrix[$i - 1][$j] + 1,      // deletion
+                    $matrix[$i][$j - 1] + 1,      // insertion
+                    $matrix[$i - 1][$j - 1] + $cost // substitution
+                );
+            }
+        }
+
+        return $matrix[$len1][$len2];
+    }
+
+    /**
+     * Calculate bonus score for special matches
+     *
+     * @param HpsElektronik $item
+     * @param array $searchParams
+     * @return float
+     */
+    private function calculateBonusScore($item, $searchParams): float
+    {
+        $bonus = 0;
+
+        // Bonus for exact matches
         if (Str::lower($item->jenis_barang) === Str::lower($searchParams['jenis_barang'])) {
-            $score += 30;
-        } elseif (Str::contains(Str::lower($item->jenis_barang), Str::lower($searchParams['jenis_barang']))) {
-            $score += 20;
+            $bonus += 5;
         }
-
-        // Exact merek match
         if (Str::lower($item->merek) === Str::lower($searchParams['merek'])) {
-            $score += 30;
-        } elseif (Str::contains(Str::lower($item->merek), Str::lower($searchParams['merek']))) {
-            $score += 20;
+            $bonus += 5;
         }
 
-        // Barang/nama_barang match + semantic spec matching
-        $inputName = Str::lower($searchParams['nama_barang']);
-        if (Str::contains(Str::lower($item->barang), $inputName)) {
-            $score += 20;
-        }
-
-        // Semantic spec: match memory/storage like "4gb", "8/128", "4 64", etc.
-        $specFromInput = $this->extractSpecs($inputName);
+        // Bonus for spec matching
+        $specFromInput = $this->extractSpecs(Str::lower($searchParams['nama_barang']));
         $specFromItem = $this->extractSpecs(Str::lower($item->barang));
+
         if ($specFromInput['ram'] && $specFromItem['ram'] && $specFromInput['ram'] == $specFromItem['ram']) {
-            $score += 10;
+            $bonus += 5;
         }
         if ($specFromInput['storage'] && $specFromItem['storage'] && $specFromInput['storage'] == $specFromItem['storage']) {
-            $score += 10;
+            $bonus += 5;
         }
 
-        // Kondisi/kelengkapan match
-        $kondisiMapping = $this->mapKelengkapanToKondisi($searchParams['kelengkapan']);
-
-        if ($kondisiMapping['kondisi'] && Str::lower($item->kondisi) === $kondisiMapping['kondisi']) {
-            $score += 20;
+        // Bonus for year relevance (newer is better)
+        $currentYear = date('Y');
+        $yearDiff = $currentYear - $item->tahun;
+        if ($yearDiff <= 2) {
+            $bonus += 5;
+        } elseif ($yearDiff <= 5) {
+            $bonus += 3;
         }
 
-        if ($kondisiMapping['grade'] && Str::lower($item->grade) === $kondisiMapping['grade']) {
-            $score += 10;
-        }
-
-        return $score;
+        return $bonus;
     }
 
     /**
