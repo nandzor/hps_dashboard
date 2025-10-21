@@ -36,7 +36,9 @@ class NumberHelper
         } elseif ($absNumber >= 1000000) {
             // Juta
             $value = $absNumber / 1000000;
-            $formatted = number_format($value, 1, '.', '');
+            // Use floor to truncate instead of rounding
+            $value = floor($value * 100) / 100;
+            $formatted = number_format($value, 2, '.', '');
             $formatted = rtrim(rtrim($formatted, '0'), '.');
             return $sign . $currency . ' ' . $formatted . 'jt';
         } elseif ($absNumber >= 1000) {
@@ -82,7 +84,9 @@ class NumberHelper
         } elseif ($absNumber >= 1000000) {
             // Juta
             $value = $absNumber / 1000000;
-            $formatted = number_format($value, 1, '.', '');
+            // Use floor to truncate instead of rounding
+            $value = floor($value * 100) / 100;
+            $formatted = number_format($value, 2, '.', '');
             $formatted = rtrim(rtrim($formatted, '0'), '.');
             return $sign . $formatted . 'jt';
         } elseif ($absNumber >= 1000) {
