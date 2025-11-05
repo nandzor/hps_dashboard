@@ -2,7 +2,7 @@
     auto_https off
     admin off
     frankenphp {
-        num_threads 16
+        num_threads 2
     }
 }
 
