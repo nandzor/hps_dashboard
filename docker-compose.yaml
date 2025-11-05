@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/frankenphp/Dockerfile
+    image: hps/dashboard:production
+    container_name: hps_app_production
+    network_mode: host
+    restart: unless-stopped
+    env_file:
+      - .env
